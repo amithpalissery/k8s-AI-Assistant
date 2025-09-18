@@ -1,0 +1,13 @@
+# Service to expose the backend
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-assistant-service
+spec:
+  selector:
+    app: k8s-assistant
+  ports:
+  - protocol: TCP
+    port: 80 # Service will be accessible on port 80
+    targetPort: 8000 # Redirects traffic to container's port 8000
+  type: LoadBalancer # Exposes the service using a cloud provider's load balancer

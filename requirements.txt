@@ -1,5 +1,7 @@
 langgraph
-langchain_aws
+langchain
+langchain-core
+langchain-community
 boto3
 kubernetes
 fastapi

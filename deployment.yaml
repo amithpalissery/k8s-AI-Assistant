@@ -1,0 +1,25 @@
+# Deployment for the backend API
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-assistant-deployment
+  labels:
+    app: k8s-assistant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-assistant
+  template:
+    metadata:
+      labels:
+        app: k8s-assistant
+    spec:
+      containers:
+      - name: k8s-assistant
+        image: amithpalissery/k8s-ai-assistant:latest # Use the image you built and pushed
+        ports:
+        - containerPort: 8000
+        env:
+        - name: AWS_REGION
+          value: "us-east-1" # Set your AWS region here

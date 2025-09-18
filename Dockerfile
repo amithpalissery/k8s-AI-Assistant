@@ -1,5 +1,5 @@
-# Stage 1: Build the Python backend
-FROM python:3.11-slim as backend-builder
+# Stage 1: The builder stage (named 'backend-builder')
+FROM python:3.11-slim AS backend-builder
 
 # Set the working directory
 WORKDIR /app
@@ -13,11 +13,12 @@ COPY . .
 
 # Stage 2: Create the final, lightweight image
 FROM python:3.11-slim
-
 WORKDIR /app
 
-# Copy the installed dependencies from the builder stage
+# Copy the installed dependencies and scripts from the builder stage
+# Referencing the 'backend-builder' stage.
 COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=backend-builder /usr/local/bin/uvicorn /usr/local/bin/
 
 # Copy the application source code and the frontend files
 COPY --from=backend-builder /app/main.py /app/main.py
