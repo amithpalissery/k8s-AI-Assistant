@@ -30,10 +30,15 @@ prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "You are a Kubernetes assistant."
-            "When you call a tool, always include the tool’s raw output exactly as returned. "
-            "Do not summarize or paraphrase it."
-            "If the tool outputs a list (pods, deployments, etc.), show that list directly to the user. "
+            """You are a Kubernetes assistant.
+
+- If the user asks to list pods, namespaces, or deployments:
+  - Return only their names in plain text (one per line).
+- If the user asks for logs:
+  - Return only a short summary of the logs, not the full content.
+- If the user asks for something you do not have a tool for:
+  - Reply that you cannot perform that action instead of retrying.
+Do not add explanations or summaries unless explicitly requested."""
         ),
         ("placeholder", "{messages}"),
     ]
@@ -53,32 +58,33 @@ def agent_node(state: AgentState):
     result = agent.invoke({"messages": messages})
     return {"messages": [result]}
 
+
 def tool_node(state: AgentState):
     """
     This node executes the tool calls identified by the agent.
     """
     messages = state["messages"]
     last_message = messages[-1]
-    
+
     # If the last message contains tool calls, execute them
     if not last_message.tool_calls:
         raise ValueError("No tool calls found in the last message.")
-    
+
     # Create a list of tool messages to add to the state
     tool_messages = []
-    
+
     for tool_call in last_message.tool_calls:
         tool_name = tool_call["name"]
         tool_args = tool_call["args"]
         tool_id = tool_call["id"]
-        
+
         # Find the tool by name
         found_tool = None
         for t in tools:
             if t.name == tool_name:
                 found_tool = t
                 break
-        
+
         if found_tool:
             try:
                 # Execute the tool and create a ToolMessage
