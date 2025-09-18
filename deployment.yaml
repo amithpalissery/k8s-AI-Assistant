@@ -1,4 +1,3 @@
-# Deployment for the backend API
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,11 +14,17 @@ spec:
       labels:
         app: k8s-assistant
     spec:
+      serviceAccountName: k8s-assistant-sa   # 👈 attach the read-only SA here
       containers:
       - name: k8s-assistant
-        image: amithpalissery/k8s-ai-assistant:v1.2
+        image: amithpalissery/k8s-ai-assistant:v1.4
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         env:
         - name: AWS_REGION
-          value: "us-east-1" # Set your AWS region here
+          value: "us-east-1"
+        envFrom:
+        - secretRef:
+            name: aws-credentials   # 👈 your AWS creds Secret
+
