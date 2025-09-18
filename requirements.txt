@@ -5,6 +5,6 @@ langchain-aws
 langchain-community
 boto3
 kubernetes
-fastapi
-uvicorn
 python-dotenv
+Flask
+waitress

@@ -18,15 +18,13 @@ WORKDIR /app
 # Copy the installed dependencies and scripts from the builder stage
 # Referencing the 'backend-builder' stage.
 COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=backend-builder /usr/local/bin/uvicorn /usr/local/bin/
+COPY --from=backend-builder /usr/local/bin/waitress-serve /usr/local/bin/
 
-# Copy the application source code and the frontend files
-COPY --from=backend-builder /app/main.py /app/main.py
-COPY --from=backend-builder /app/core /app/core
-COPY --from=backend-builder /app/frontend /app/frontend
+# Copy the entire application code directory to ensure all files are included
+COPY --from=backend-builder /app /app
 
 # Expose the port FastAPI will run on
 EXPOSE 8000
 
-# Command to run the application using Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the application using Waitress
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=8000", "main:app"]

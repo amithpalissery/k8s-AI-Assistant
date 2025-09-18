@@ -1,36 +1,20 @@
 import os
-import uvicorn
-from fastapi import FastAPI
-from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
 import asyncio
-from pydantic import BaseModel # <-- ADD THIS IMPORT
+from flask import Flask, request, jsonify, send_from_directory
+from dotenv import load_dotenv
+from flask_cors import CORS
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()
 
-# Set up FastAPI app
-app = FastAPI(
-    title="Kubernetes AI Assistant",
-    description="A read-only AI assistant for Kubernetes clusters.",
-)
+# Set up Flask app
+app = Flask(__name__)
 
 # CORS middleware for frontend communication
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+CORS(app)
 
-# Serve the static frontend files
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
-
-# Define the request body format # <-- ADD THIS SECTION
+# Define the request body format
 class ChatRequest(BaseModel):
     question: str
 
@@ -38,6 +22,8 @@ class ChatRequest(BaseModel):
 from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments
 from core.agent import agent_node, tool_node
 from core.state import AgentState
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
 
 # Define the LangGraph workflow
 graph = StateGraph(AgentState)
@@ -69,27 +55,40 @@ graph.add_conditional_edges(
 # Compile the graph
 full_graph = graph.compile()
 
+# Serve the static frontend files
+@app.route("/")
+def serve_index():
+    return send_from_directory('frontend', 'index.html')
 
-@app.post("/chat")
-async def chat_with_assistant(request: ChatRequest): # <-- UPDATE THIS LINE
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory('frontend', path)
+
+
+@app.route("/chat", methods=["POST"])
+def chat_with_assistant():
     """
     Endpoint to receive a user's natural language query and return a response.
     """
     try:
-        inputs = {"input": request.question, "chat_history": []}
+        data = request.get_json()
+        question = data.get("question")
+        
+        inputs = {"input": question, "chat_history": []}
         
         # Invoke the LangGraph agent to process the query
-        response = await full_graph.ainvoke(inputs)
+        # Since Flask is synchronous, we run the async ainvoke call in a thread
+        response = asyncio.run(full_graph.ainvoke(inputs))
         
         # LangGraph returns a final state, extract the last message content
         final_response = response.get("messages", [])[-1].content
         
-        return {"response": final_response}
+        return jsonify({"response": final_response})
     except Exception as e:
         # Catch and handle errors during graph execution
         print(f"Error during graph execution: {e}")
-        return {"response": f"An error occurred: {str(e)}"}
-
+        return jsonify({"response": f"An error occurred: {str(e)}"})
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8000)
