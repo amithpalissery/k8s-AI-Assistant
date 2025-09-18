@@ -8,3 +8,4 @@ kubernetes
 python-dotenv
 Flask
 waitress
+flask_cors
