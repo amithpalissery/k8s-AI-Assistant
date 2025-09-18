@@ -1,0 +1,7 @@
+langgraph
+langchain_aws
+boto3
+kubernetes
+fastapi
+uvicorn
+python-dotenv
