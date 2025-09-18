@@ -1,6 +1,7 @@
 langgraph
 langchain
 langchain-core
+langchain-aws
 langchain-community
 boto3
 kubernetes

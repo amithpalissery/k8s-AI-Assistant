@@ -1,14 +1,12 @@
 import os
-from langchain_community.chat_models import BedrockChat
+from langchain_aws import ChatBedrock
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.messages import BaseMessage
 from typing import Annotated
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
-from langchain.agents import AgentExecutor
-from langchain_core.agents import AgentAction, AgentFinish, AgentExecutor
-from langchain.agents import create_tool_calling_agent
+from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.tools import tool
 
 from core.state import AgentState
@@ -18,7 +16,7 @@ from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployment
 aws_region = os.getenv("AWS_REGION", "us-east-1")
 
 # The Bedrock model used by the agent
-llm = BedrockChat(
+llm = ChatBedrock(
     model_id="anthropic.claude-3-haiku-20240307-v1:0",
     model_kwargs={"temperature": 0.0},
     region_name=aws_region
@@ -44,11 +42,9 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# Create the agent
-agent = create_tool_calling_agent(llm, tools, prompt)
-
-# Create the agent executor
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+# Create the agent by binding the tools to the LLM
+# This is the modern and correct way to use tool calling in LangChain
+agent = llm.bind_tools(tools)
 
 # Define the nodes for the graph
 def agent_node(state: AgentState):
@@ -56,7 +52,7 @@ def agent_node(state: AgentState):
     This node represents the agent's thought process.
     It takes the state (conversation history) and decides what to do next.
     """
-    return agent_executor.invoke(state)
+    return agent.invoke(state)
 
 def tool_node(state: AgentState):
     """

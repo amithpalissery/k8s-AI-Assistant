@@ -2,13 +2,12 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from langchain_core.messages import BaseMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 import asyncio
+from pydantic import BaseModel # <-- ADD THIS IMPORT
 
 # Load environment variables
 load_dotenv()
@@ -31,10 +30,13 @@ app.add_middleware(
 # Serve the static frontend files
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
+# Define the request body format # <-- ADD THIS SECTION
+class ChatRequest(BaseModel):
+    question: str
 
 # Import the LangGraph components from your core folder
 from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments
-from core.agent import agent_node, tool_node, agent_executor
+from core.agent import agent_node, tool_node
 from core.state import AgentState
 
 # Define the LangGraph workflow
@@ -69,12 +71,12 @@ full_graph = graph.compile()
 
 
 @app.post("/chat")
-async def chat_with_assistant(question: str):
+async def chat_with_assistant(request: ChatRequest): # <-- UPDATE THIS LINE
     """
     Endpoint to receive a user's natural language query and return a response.
     """
     try:
-        inputs = {"input": question, "chat_history": []}
+        inputs = {"input": request.question, "chat_history": []}
         
         # Invoke the LangGraph agent to process the query
         response = await full_graph.ainvoke(inputs)
