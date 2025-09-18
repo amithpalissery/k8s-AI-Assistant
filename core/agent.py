@@ -65,17 +65,24 @@ def tool_node(state: AgentState):
     if not last_message.tool_calls:
         raise ValueError("No tool calls found in the last message.")
     
+    # Create a list of messages to add to the state
+    tool_messages = []
+    
     for tool_call in last_message.tool_calls:
         tool_name = tool_call.name
         tool_args = tool_call.args
         
-        # Look up the tool by name and execute it
         found_tool = next((t for t in tools if t.name == tool_name), None)
         if found_tool:
+            # Execute the tool and create a ToolMessage
             result = found_tool.invoke(tool_args)
-            # You might want to handle the output here
+            
+            # The key fix: Add the result as a ToolMessage to be returned
+            tool_messages.append((tool_call.id, result))
+            
             print(f"Tool {tool_name} executed with result: {result}")
         else:
             print(f"Tool {tool_name} not found.")
 
-    return state
+    # Return the list of tool messages
+    return {"messages": tool_messages}
