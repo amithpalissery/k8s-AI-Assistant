@@ -4,6 +4,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 from flask_cors import CORS
 from pydantic import BaseModel
+from langchain_core.messages import HumanMessage
+
 
 # Load environment variables
 load_dotenv()
@@ -74,7 +76,10 @@ def chat_with_assistant():
         data = request.get_json()
         question = data.get("question")
         
-        inputs = {"input": question, "chat_history": []}
+        
+        # The LangGraph ainvoke method expects a list of messages as input.
+        inputs = {"messages": [HumanMessage(content=question)], "chat_history": []}
+        
         
         # Invoke the LangGraph agent to process the query
         # Since Flask is synchronous, we run the async ainvoke call in a thread
