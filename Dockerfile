@@ -1,5 +1,5 @@
-# Use a slim Python image for a smaller footprint
-FROM python:3.11-slim
+# Stage 1: Build the Python backend
+FROM python:3.11-slim as backend-builder
 
 # Set the working directory
 WORKDIR /app
@@ -8,8 +8,21 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the application code
 COPY . .
+
+# Stage 2: Create the final, lightweight image
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy the installed dependencies from the builder stage
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Copy the application source code and the frontend files
+COPY --from=backend-builder /app/main.py /app/main.py
+COPY --from=backend-builder /app/core /app/core
+COPY --from=backend-builder /app/frontend /app/frontend
 
 # Expose the port FastAPI will run on
 EXPOSE 8000
