@@ -6,7 +6,6 @@ from flask_cors import CORS
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage
 
-
 # Load environment variables
 load_dotenv()
 
@@ -66,7 +65,6 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('frontend', path)
 
-
 @app.route("/chat", methods=["POST"])
 def chat_with_assistant():
     """
@@ -76,14 +74,25 @@ def chat_with_assistant():
         data = request.get_json()
         question = data.get("question")
         
+        # Validate input
+        if not question:
+            return jsonify({"response": "No question provided"}), 400
         
-        # The LangGraph ainvoke method expects a list of messages as input.
-        inputs = {"messages": [HumanMessage(content=question)], "chat_history": []}
+        print(f"DEBUG: Received question: {question}")
+        print(f"DEBUG: Question type: {type(question)}")
         
+        # The LangGraph ainvoke method expects a dictionary with messages and chat_history
+        inputs = {
+            "messages": [HumanMessage(content=question)], 
+            "chat_history": []
+        }
+        
+        print(f"DEBUG: Inputs to graph: {inputs}")
         
         # Invoke the LangGraph agent to process the query
-        # Since Flask is synchronous, we run the async ainvoke call in a thread
         response = asyncio.run(full_graph.ainvoke(inputs))
+        
+        print(f"DEBUG: Graph response: {response}")
         
         # LangGraph returns a final state, extract the last message content
         final_response = response.get("messages", [])[-1].content
@@ -92,6 +101,8 @@ def chat_with_assistant():
     except Exception as e:
         # Catch and handle errors during graph execution
         print(f"Error during graph execution: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"response": f"An error occurred: {str(e)}"})
 
 if __name__ == "__main__":

@@ -8,3 +8,4 @@ class AgentState(TypedDict):
     It contains a list of all messages exchanged.
     """
     messages: Annotated[List[BaseMessage], add_messages]
+    chat_history: List[BaseMessage]  # Added for compatibility
