@@ -67,7 +67,7 @@ jobs:
 
             
             # Wait for deployments to be ready
-            kubectl rollout status deployment/k8s-assistant-service --timeout=300s
+            kubectl rollout status deployment/k8s-assistant-deployment --timeout=300s
           "
       - name: Verify Deployment
         run: |
