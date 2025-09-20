@@ -95,7 +95,22 @@ def chat_with_assistant():
         print(f"DEBUG: Graph response: {response}")
         
         # LangGraph returns a final state, extract the last message content
-        final_response = response.get("messages", [])[-1].content
+        messages = response.get("messages", [])
+        if not messages:
+            return jsonify({"response": "No response generated"})
+        
+        # Find the last non-empty AI message or tool result
+        final_response = ""
+        for msg in reversed(messages):
+            if hasattr(msg, 'tool_call_id'):  # ToolMessage
+                if msg.content and not final_response:
+                    final_response = msg.content
+            elif hasattr(msg, 'content') and msg.content:  # AIMessage with content
+                final_response = msg.content
+                break
+        
+        if not final_response:
+            final_response = "No response available"
         
         return jsonify({"response": final_response})
     except Exception as e:

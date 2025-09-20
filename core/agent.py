@@ -38,7 +38,8 @@ prompt = ChatPromptTemplate.from_messages(
   - Return only a short summary of the logs, not the full content.
 - If the user asks for something you do not have a tool for:
   - Reply that you cannot perform that action instead of retrying.
-Do not add explanations or summaries unless explicitly requested."""
+
+IMPORTANT: After using a tool, always provide a clear response based on the tool's output. Never return empty content."""
         ),
         ("placeholder", "{messages}"),
     ]

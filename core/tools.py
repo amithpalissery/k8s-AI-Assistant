@@ -82,7 +82,10 @@ def list_deployments(namespace: str) -> str:
     try:
         deployments = apps_v1.list_namespaced_deployment(namespace=namespace)
         deployment_names = [d.metadata.name for d in deployments.items]
-        return f"Deployments in namespace '{namespace}': {', '.join(deployment_names)}"
+        if deployment_names:
+            return "\n".join(deployment_names)
+        else:
+            return f"No deployments found in namespace '{namespace}'."
     except client.ApiException as e:
         return f"Error: Failed to list deployments. Details: {e.reason}"
 
