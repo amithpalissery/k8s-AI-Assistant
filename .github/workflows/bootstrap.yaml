@@ -39,7 +39,11 @@ jobs:
           chmod 600 private_key.pem
       - name: Copy Kubernetes manifests to EC2
         run: |
-          scp -i private_key.pem -o StrictHostKeyChecking=no -r kubernets/ ubuntu@${{ env.EC2_IP }}:~/
+          scp -i private_key.pem -o StrictHostKeyChecking=no deployment.yaml ubuntu@${{ env.EC2_IP }}:~/
+          scp -i private_key.pem -o StrictHostKeyChecking=no service.yaml ubuntu@${{ env.EC2_IP }}:~/
+          scp -i private_key.pem -o StrictHostKeyChecking=no serviceaccount.yaml ubuntu@${{ env.EC2_IP }}:~/
+          scp -i private_key.pem -o StrictHostKeyChecking=no clusterrole.yaml ubuntu@${{ env.EC2_IP }}:~/
+          scp -i private_key.pem -o StrictHostKeyChecking=no clusterrolebinding.yaml ubuntu@${{ env.EC2_IP }}:~/
       - name: Create Kubernetes Secret for AWS Credentials
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }} "
@@ -55,8 +59,12 @@ jobs:
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_IP }} "
             # Apply deployments and services
+            kubectl apply -f serviceaccount.yaml
+            kubectl apply -f clusterrole.yaml
+            kubectl apply -f clusterrolebinding.yaml
             kubectl apply -f deployment.yaml
             kubectl apply -f service.yaml
+
             
             # Wait for deployments to be ready
             kubectl rollout status deployment/k8s-assistant-service --timeout=300s
