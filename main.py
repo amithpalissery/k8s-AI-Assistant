@@ -101,17 +101,24 @@ def chat_with_assistant():
         
         # Find the last non-empty AI message or tool result
         final_response = ""
+        
+        # First try to get the last AI message with content
         for msg in reversed(messages):
-            if hasattr(msg, 'tool_call_id'):  # ToolMessage
-                if msg.content and not final_response:
-                    final_response = msg.content
-            elif hasattr(msg, 'content') and msg.content:  # AIMessage with content
+            if hasattr(msg, 'content') and msg.content and not hasattr(msg, 'tool_call_id') and msg.__class__.__name__ != 'HumanMessage':
                 final_response = msg.content
                 break
+        
+        # If no AI response, use the tool result
+        if not final_response:
+            for msg in reversed(messages):
+                if hasattr(msg, 'tool_call_id') and msg.content:
+                    final_response = msg.content
+                    break
         
         if not final_response:
             final_response = "No response available"
         
+        print(f"DEBUG: Final response: {final_response}")
         return jsonify({"response": final_response})
     except Exception as e:
         # Catch and handle errors during graph execution
