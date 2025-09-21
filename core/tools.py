@@ -72,15 +72,39 @@ def get_pod_logs(pod_name: str, namespace: str) -> str:
         return f"Error: Failed to get logs for pod '{pod_name}'. Details: {e.reason}"
 
 @tool
-def list_deployments(namespace: str) -> str:
+def list_replicasets(namespace: str = "default") -> str:
+    """
+    Lists all replicasets in a specified namespace.
+    
+    Args:
+        namespace: The Kubernetes namespace. Defaults to 'default'.
+    """
+    try:
+        if namespace.lower() == "all":
+            replicasets = apps_v1.list_replica_set_for_all_namespaces()
+        else:
+            replicasets = apps_v1.list_namespaced_replica_set(namespace=namespace)
+        rs_names = [rs.metadata.name for rs in replicasets.items]
+        if rs_names:
+            return "\n".join(rs_names)
+        else:
+            return f"No replicasets found in namespace '{namespace}'."
+    except client.ApiException as e:
+        return f"Error: Failed to list replicasets. Details: {e.reason}"
+
+@tool
+def list_deployments(namespace: str = "default") -> str:
     """
     Lists all deployments in a specified namespace.
     
     Args:
-        namespace: The Kubernetes namespace.
+        namespace: The Kubernetes namespace. Defaults to 'default'.
     """
     try:
-        deployments = apps_v1.list_namespaced_deployment(namespace=namespace)
+        if namespace.lower() == "all":
+            deployments = apps_v1.list_deployment_for_all_namespaces()
+        else:
+            deployments = apps_v1.list_namespaced_deployment(namespace=namespace)
         deployment_names = [d.metadata.name for d in deployments.items]
         if deployment_names:
             return "\n".join(deployment_names)

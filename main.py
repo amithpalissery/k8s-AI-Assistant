@@ -20,7 +20,7 @@ class ChatRequest(BaseModel):
     question: str
 
 # Import the LangGraph components from your core folder
-from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments
+from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments, list_replicasets
 from core.agent import agent_node, tool_node
 from core.state import AgentState
 from langgraph.graph import StateGraph, START, END

@@ -10,7 +10,7 @@ from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.tools import tool
 
 from core.state import AgentState
-from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments
+from core.tools import list_pods, get_pod_details, get_pod_logs, list_deployments, list_replicasets
 
 # Get the AWS region from environment variables
 aws_region = os.getenv("AWS_REGION", "us-east-1")
@@ -23,7 +23,7 @@ llm = ChatBedrock(
 )
 
 # List of all available read-only tools
-tools = [list_pods, get_pod_details, get_pod_logs, list_deployments]
+tools = [list_pods, get_pod_details, get_pod_logs, list_deployments, list_replicasets]
 
 # This is the prompt template that guides the LLM
 prompt = ChatPromptTemplate.from_messages(
