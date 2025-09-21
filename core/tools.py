@@ -29,8 +29,8 @@ def list_pods(namespace: str = "all") -> str:
         else:
             ret = v1.list_namespaced_pod(namespace=namespace, watch=False)
         
-        pod_names = [f"Pod: {i.metadata.name} | Status: {i.status.phase} | IP: {i.status.pod_ip}" for i in ret.items]
-        return "Pods found:\n" + "\n".join(pod_names) if pod_names else f"No pods found in namespace '{namespace}'."
+        pod_names = [i.metadata.name for i in ret.items]
+        return "\n".join(pod_names) if pod_names else f"No pods found in namespace '{namespace}'."
     except client.ApiException as e:
         return f"Error: Failed to list pods. Details: {e.reason}"
 
