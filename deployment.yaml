@@ -17,7 +17,7 @@ spec:
       serviceAccountName: k8s-assistant-sa   # 👈 attach the read-only SA here
       containers:
       - name: k8s-assistant
-        image: amithpalissery/k8s-ai-assistant:v1.4
+        image: amithpalissery/k8s-ai-assistant:v1.5
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -27,4 +27,5 @@ spec:
         envFrom:
         - secretRef:
             name: aws-credentials   # 👈 your AWS creds Secret
+
 
