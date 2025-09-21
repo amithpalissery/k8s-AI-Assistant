@@ -17,7 +17,7 @@ spec:
       serviceAccountName: k8s-assistant-sa   # 👈 attach the read-only SA here
       containers:
       - name: k8s-assistant
-        image: amithpalissery/k8s-ai-assistant:v2.0
+        image: amithpalissery/k8s-ai-assistant:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
