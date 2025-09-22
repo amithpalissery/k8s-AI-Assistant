@@ -1,7 +1,3 @@
-Perfect 👍 You’re essentially building a **Kubernetes AI Assistant powered by AWS Bedrock**. Here’s a **well-structured `README.md`** that includes project description, workflow architecture, setup instructions, and the note about AWS credentials being passed as Kubernetes secrets.
-
----
-
 # 🧑‍💻 Kubernetes AI Assistant
 
 A **Kubernetes Assistant** powered by **AWS Bedrock (Claude 3 Haiku)** that can answer natural language queries about your Kubernetes cluster.
